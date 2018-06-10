@@ -3,7 +3,7 @@ package com.vlad.hashmap;
 public interface Map<K, V> {
     Object put(K key, V value);
 
-    Object get(V value);
+    Object get(K key);
 
     int size();
 
