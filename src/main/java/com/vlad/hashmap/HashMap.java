@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 public class HashMap<K, V> implements Map<K, V> {
     private static final int INITIAL_CAPACITY = 5;
-
     private ArrayList<Entry<K, V>>[] baskets;
     private int size;
 
