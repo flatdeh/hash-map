@@ -22,6 +22,7 @@ public class HashMap<K, V> implements Map<K, V> {
     }
 
     public V put(K key, V value) {
+        validateKey(key);
         int index = getBasketIndex(key);
 
         for (Entry<K, V> kvEntry : baskets[index]) {
@@ -39,6 +40,7 @@ public class HashMap<K, V> implements Map<K, V> {
     }
 
     public V get(K key) {
+        validateKey(key);
         int index = getBasketIndex(key);
 
         for (Entry<K, V> kvEntry : baskets[index]) {
@@ -63,6 +65,12 @@ public class HashMap<K, V> implements Map<K, V> {
 
     private int getBasketIndex(K key) {
         return key.hashCode() % baskets.length;
+    }
+
+    private void validateKey(K key) {
+        if (key == null) {
+            throw new IllegalArgumentException("key can't be null!");
+        }
     }
 
     private static class Entry<K, V> {
