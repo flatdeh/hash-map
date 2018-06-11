@@ -77,7 +77,7 @@ public class HashMapTest {
         hashMap.put("c", "3");
         hashMap.put("d", "4");
         hashMap.put("a", "5");
-        assertTrue(hashMap.containsKey(null));
+        assertTrue(hashMap.containsKey("a"));
         assertFalse(hashMap.containsKey("ssss"));
     }
 }
