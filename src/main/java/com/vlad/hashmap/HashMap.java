@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class HashMap<K, V> implements Map<K, V> {
     private static final int INITIAL_CAPACITY = 5;
+    private static final double LOAD_FACTOR = 0.75;
     private ArrayList<Entry<K, V>>[] buskets;
     private int size;
 
@@ -22,33 +23,43 @@ public class HashMap<K, V> implements Map<K, V> {
     }
 
     public V put(K key, V value) {
-        validateKey(key);
-        int index = getBasketIndex(key);
-
-        for (Entry<K, V> kvEntry : buskets[index]) {
-            if (kvEntry.key.equals(key)) {
-                V oldValue = kvEntry.value;
-                kvEntry.value = value;
-                return oldValue;
-            }
+        if (size >= (int) (buskets.length * LOAD_FACTOR)) {
+            growCapasity();
         }
+        if (key == null) {
+            return putNull(value);
+        } else {
+            int index = getBusketIndex(key, buskets);
+            ArrayList<Entry<K, V>> busket = buskets[index];
 
-        buskets[index].add(new Entry<>(key, value));
-        size++;
-
+            for (Entry<K, V> kvEntry : busket) {
+                if (kvEntry.key.equals(key)) {
+                    V oldValue = kvEntry.value;
+                    kvEntry.value = value;
+                    return oldValue;
+                }
+            }
+            busket.add(new Entry<>(key, value));
+            size++;
+        }
         return null;
     }
 
     public V get(K key) {
-        validateKey(key);
-        int index = getBasketIndex(key);
+        if (key == null) {
+            return getNull();
+        } else {
+            int index = getBusketIndex(key, buskets);
 
-        for (Entry<K, V> kvEntry : buskets[index]) {
-            if (kvEntry.key.equals(key)) {
-                return kvEntry.value;
+            for (Entry<K, V> kvEntry : buskets[index]) {
+                if (kvEntry.key != null) {
+                    if (kvEntry.key.equals(key)) {
+                        return kvEntry.value;
+                    }
+                }
             }
+            return null;
         }
-        return null;
     }
 
     public int size() {
@@ -60,17 +71,63 @@ public class HashMap<K, V> implements Map<K, V> {
     }
 
     public boolean containsKey(K key) {
-        return get(key) != null;
-    }
+        int index = getBusketIndex(key, buskets);
 
-    private int getBasketIndex(K key) {
-        return key.hashCode() % buskets.length;
-    }
-
-    private void validateKey(K key) {
-        if (key == null) {
-            throw new IllegalArgumentException("key can't be null!");
+        for (Entry<K, V> kvEntry : buskets[index]) {
+            if (kvEntry.key.equals(key)) {
+                return true;
+            }
         }
+        return false;
+    }
+
+    private void growCapasity() {
+        ArrayList<Entry<K, V>>[] newBuskets = new ArrayList[buskets.length + 5];
+        for (int i = 0; i < buskets.length + 5; i++) {
+            newBuskets[i] = new ArrayList<>();
+        }
+        transferEntrys(newBuskets);
+        buskets = newBuskets;
+    }
+
+    private void transferEntrys(ArrayList<Entry<K, V>>[] newBuskets) {
+        for (ArrayList<Entry<K, V>> busket : buskets) {
+            for (Entry<K, V> entry : busket) {
+                if (entry.key == null) {
+                    newBuskets[0].add(new Entry<K, V>(null, entry.value));
+                } else {
+                    int index = getBusketIndex(entry.key, newBuskets);
+                    newBuskets[index].add(new Entry<K, V>(entry.key, entry.value));
+                }
+            }
+        }
+    }
+
+    private int getBusketIndex(K key, ArrayList<Entry<K, V>>[] arrayBuskets) {
+        return Math.abs(key.hashCode()) % arrayBuskets.length;
+    }
+
+    private V getNull() {
+        for (Entry<K, V> kvEntry : buskets[0]) {
+            if (kvEntry.key == null) {
+                return kvEntry.value;
+            }
+        }
+        return null;
+    }
+
+    private V putNull(V value) {
+        for (Entry<K, V> kvEntry : buskets[0]) {
+            if (kvEntry.key == null) {
+                V oldValue = kvEntry.value;
+                kvEntry.value = value;
+                return oldValue;
+            }
+        }
+        buskets[0].add((Entry<K, V>) new Entry<>(null, value));
+        size++;
+
+        return null;
     }
 
     private static class Entry<K, V> {
@@ -81,5 +138,7 @@ public class HashMap<K, V> implements Map<K, V> {
             this.key = key;
             this.value = value;
         }
+
     }
+
 }
