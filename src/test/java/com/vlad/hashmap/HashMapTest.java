@@ -5,7 +5,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class HashMapTest {
-    private HashMap<String, String> hashMap = new HashMap<>(1);
+    private HashMap<String, String> hashMap = new HashMap<>(10);
 
     @Test (expected = IllegalArgumentException.class)
     public void testInvalidBasketsCountZero()

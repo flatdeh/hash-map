@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class HashMap<K, V> implements Map<K, V> {
     private static final int INITIAL_CAPACITY = 5;
-    private ArrayList<Entry<K, V>>[] baskets;
+    private ArrayList<Entry<K, V>>[] buskets;
     private int size;
 
     public HashMap() {
@@ -15,9 +15,9 @@ public class HashMap<K, V> implements Map<K, V> {
         if (basketsCount <= 0) {
             throw new IllegalArgumentException("basketSize should be > 0 , basketsCount =" + basketsCount);
         }
-        this.baskets = new ArrayList[basketsCount];
+        this.buskets = new ArrayList[basketsCount];
         for (int i = 0; i < basketsCount; i++) {
-            baskets[i] = new ArrayList<>();
+            buskets[i] = new ArrayList<>();
         }
     }
 
@@ -25,7 +25,7 @@ public class HashMap<K, V> implements Map<K, V> {
         validateKey(key);
         int index = getBasketIndex(key);
 
-        for (Entry<K, V> kvEntry : baskets[index]) {
+        for (Entry<K, V> kvEntry : buskets[index]) {
             if (kvEntry.key.equals(key)) {
                 V oldValue = kvEntry.value;
                 kvEntry.value = value;
@@ -33,7 +33,7 @@ public class HashMap<K, V> implements Map<K, V> {
             }
         }
 
-        baskets[index].add(new Entry<>(key, value));
+        buskets[index].add(new Entry<>(key, value));
         size++;
 
         return null;
@@ -43,7 +43,7 @@ public class HashMap<K, V> implements Map<K, V> {
         validateKey(key);
         int index = getBasketIndex(key);
 
-        for (Entry<K, V> kvEntry : baskets[index]) {
+        for (Entry<K, V> kvEntry : buskets[index]) {
             if (kvEntry.key.equals(key)) {
                 return kvEntry.value;
             }
@@ -64,7 +64,7 @@ public class HashMap<K, V> implements Map<K, V> {
     }
 
     private int getBasketIndex(K key) {
-        return key.hashCode() % baskets.length;
+        return key.hashCode() % buskets.length;
     }
 
     private void validateKey(K key) {
