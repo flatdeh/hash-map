@@ -101,13 +101,13 @@ public class HashMap<K, V> implements Map<K, V>, Iterable<K> {
             growCapacity();
         }
         if (key == null) {
-            return putNull(value);
+            return putNullIfAbsent(value);
         } else {
             int index = getBusketIndex(key, buskets);
             ArrayList<Entry<K, V>> busket = buskets[index];
 
             for (Entry<K, V> entry : busket) {
-                if(entry.key!=null) {
+                if (entry.key != null) {
                     if (entry.key.equals(key)) {
                         return entry.value;
                     }
@@ -116,6 +116,18 @@ public class HashMap<K, V> implements Map<K, V>, Iterable<K> {
             busket.add(new Entry<>(key, value));
             size++;
         }
+        return null;
+    }
+
+    private V putNullIfAbsent(V value) {
+        for (Entry<K, V> entry : buskets[0]) {
+            if (entry.key == null) {
+                return entry.value;
+            }
+        }
+        buskets[0].add((Entry<K, V>) new Entry<>(null, value));
+        size++;
+
         return null;
     }
 
@@ -144,7 +156,8 @@ public class HashMap<K, V> implements Map<K, V>, Iterable<K> {
     }
 
     private int getBusketIndex(K key, ArrayList<Entry<K, V>>[] arrayBuskets) {
-        return Math.abs(key.hashCode()) % arrayBuskets.length;
+        int keyHashCode = key.hashCode();
+        return keyHashCode == Integer.MIN_VALUE ? 0 : Math.abs(keyHashCode) % arrayBuskets.length;
     }
 
     private V getNull() {
@@ -198,8 +211,8 @@ public class HashMap<K, V> implements Map<K, V>, Iterable<K> {
 
         @Override
         public K next() {
-            for (; row < buskets.length;) {
-                for (; column < buskets[row].size();) {
+            for (; row < buskets.length; ) {
+                for (; column < buskets[row].size(); ) {
                     index++;
                     return buskets[row].get(column++).key;
                 }
