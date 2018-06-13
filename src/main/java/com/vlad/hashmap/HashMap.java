@@ -1,8 +1,9 @@
 package com.vlad.hashmap;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
-public class HashMap<K, V> implements Map<K, V> {
+public class HashMap<K, V> implements Map<K, V>, Iterable<K> {
     private static final int INITIAL_CAPACITY = 5;
     private static final double LOAD_FACTOR = 0.75;
     private ArrayList<Entry<K, V>>[] buskets;
@@ -23,8 +24,8 @@ public class HashMap<K, V> implements Map<K, V> {
     }
 
     public V put(K key, V value) {
-        if (size >= (int) (buskets.length * LOAD_FACTOR)) {
-            growCapasity();
+        if (size > (int) (buskets.length * LOAD_FACTOR)) {
+            growCapacity();
         }
         if (key == null) {
             return putNull(value);
@@ -32,11 +33,13 @@ public class HashMap<K, V> implements Map<K, V> {
             int index = getBusketIndex(key, buskets);
             ArrayList<Entry<K, V>> busket = buskets[index];
 
-            for (Entry<K, V> kvEntry : busket) {
-                if (kvEntry.key.equals(key)) {
-                    V oldValue = kvEntry.value;
-                    kvEntry.value = value;
-                    return oldValue;
+            for (Entry<K, V> entry : busket) {
+                if (entry.key != null) {
+                    if (entry.key.equals(key)) {
+                        V oldValue = entry.value;
+                        entry.value = value;
+                        return oldValue;
+                    }
                 }
             }
             busket.add(new Entry<>(key, value));
@@ -51,10 +54,10 @@ public class HashMap<K, V> implements Map<K, V> {
         } else {
             int index = getBusketIndex(key, buskets);
 
-            for (Entry<K, V> kvEntry : buskets[index]) {
-                if (kvEntry.key != null) {
-                    if (kvEntry.key.equals(key)) {
-                        return kvEntry.value;
+            for (Entry<K, V> entry : buskets[index]) {
+                if (entry.key != null) {
+                    if (entry.key.equals(key)) {
+                        return entry.value;
                     }
                 }
             }
@@ -73,31 +76,68 @@ public class HashMap<K, V> implements Map<K, V> {
     public boolean containsKey(K key) {
         int index = getBusketIndex(key, buskets);
 
-        for (Entry<K, V> kvEntry : buskets[index]) {
-            if (kvEntry.key.equals(key)) {
+        for (Entry<K, V> entry : buskets[index]) {
+            if (entry.key.equals(key)) {
                 return true;
             }
         }
         return false;
     }
 
-    private void growCapasity() {
-        ArrayList<Entry<K, V>>[] newBuskets = new ArrayList[buskets.length + 5];
-        for (int i = 0; i < buskets.length + 5; i++) {
+    public void putAll(HashMap<K, V> hashMap) {
+        for (K key : hashMap) {
+            put(key, hashMap.get(key));
+        }
+    }
+
+    public void putAllIfAbsent(HashMap<K, V> hashMap) {
+        for (K key : hashMap) {
+            putIfAbsent(key, hashMap.get(key));
+        }
+    }
+
+    public V putIfAbsent(K key, V value) {
+        if (size > (int) (buskets.length * LOAD_FACTOR)) {
+            growCapacity();
+        }
+        if (key == null) {
+            return putNull(value);
+        } else {
+            int index = getBusketIndex(key, buskets);
+            ArrayList<Entry<K, V>> busket = buskets[index];
+
+            for (Entry<K, V> entry : busket) {
+                if(entry.key!=null) {
+                    if (entry.key.equals(key)) {
+                        return entry.value;
+                    }
+                }
+            }
+            busket.add(new Entry<>(key, value));
+            size++;
+        }
+        return null;
+    }
+
+
+    private void growCapacity() {
+        int newCapacity = buskets.length * 2;
+        ArrayList<Entry<K, V>>[] newBuskets = new ArrayList[newCapacity];
+        for (int i = 0; i < newCapacity; i++) {
             newBuskets[i] = new ArrayList<>();
         }
-        transferEntrys(newBuskets);
+        transferEntries(newBuskets);
         buskets = newBuskets;
     }
 
-    private void transferEntrys(ArrayList<Entry<K, V>>[] newBuskets) {
+    private void transferEntries(ArrayList<Entry<K, V>>[] newHashMap) {
         for (ArrayList<Entry<K, V>> busket : buskets) {
             for (Entry<K, V> entry : busket) {
                 if (entry.key == null) {
-                    newBuskets[0].add(new Entry<K, V>(null, entry.value));
+                    newHashMap[0].add(new Entry<K, V>(null, entry.value));
                 } else {
-                    int index = getBusketIndex(entry.key, newBuskets);
-                    newBuskets[index].add(new Entry<K, V>(entry.key, entry.value));
+                    int index = getBusketIndex(entry.key, newHashMap);
+                    newHashMap[index].add(new Entry<>(entry.key, entry.value));
                 }
             }
         }
@@ -108,19 +148,19 @@ public class HashMap<K, V> implements Map<K, V> {
     }
 
     private V getNull() {
-        for (Entry<K, V> kvEntry : buskets[0]) {
-            if (kvEntry.key == null) {
-                return kvEntry.value;
+        for (Entry<K, V> entry : buskets[0]) {
+            if (entry.key == null) {
+                return entry.value;
             }
         }
         return null;
     }
 
     private V putNull(V value) {
-        for (Entry<K, V> kvEntry : buskets[0]) {
-            if (kvEntry.key == null) {
-                V oldValue = kvEntry.value;
-                kvEntry.value = value;
+        for (Entry<K, V> entry : buskets[0]) {
+            if (entry.key == null) {
+                V oldValue = entry.value;
+                entry.value = value;
                 return oldValue;
             }
         }
@@ -128,6 +168,11 @@ public class HashMap<K, V> implements Map<K, V> {
         size++;
 
         return null;
+    }
+
+    @Override
+    public Iterator<K> iterator() {
+        return new HashMapIterator();
     }
 
     private static class Entry<K, V> {
@@ -140,5 +185,36 @@ public class HashMap<K, V> implements Map<K, V> {
         }
 
     }
+
+    private class HashMapIterator implements Iterator<K> {
+        private int index;
+        private int row = 0;
+        private int column = 0;
+
+        @Override
+        public boolean hasNext() {
+            return index < size;
+        }
+
+        @Override
+        public K next() {
+            for (; row < buskets.length;) {
+                for (; column < buskets[row].size();) {
+                    index++;
+                    return buskets[row].get(column++).key;
+                }
+                row++;
+                column = 0;
+            }
+            index++;
+            return null;
+        }
+
+        @Override
+        public void remove() {
+
+        }
+    }
+
 
 }
