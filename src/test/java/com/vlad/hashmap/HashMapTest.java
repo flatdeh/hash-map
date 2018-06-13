@@ -151,7 +151,7 @@ public class HashMapTest {
         hashMapSecond.put("m","99");
         hashMapSecond.putAllIfAbsent(hashMap);
 
-        assertEquals("1", hashMapSecond.get(null));
+        assertEquals("11", hashMapSecond.get(null));
         assertEquals("22", hashMapSecond.get("a"));
         assertEquals("3", hashMapSecond.get("b"));
         assertEquals("4", hashMapSecond.get("c"));
