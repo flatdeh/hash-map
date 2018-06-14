@@ -211,8 +211,8 @@ public class HashMap<K, V> implements Map<K, V>, Iterable<K> {
 
         @Override
         public K next() {
-            for (; row < buskets.length; ) {
-                for (; column < buskets[row].size(); ) {
+            for (; row < buskets.length;) {
+                for (; column < buskets[row].size();) {
                     index++;
                     return buskets[row].get(column++).key;
                 }
@@ -223,10 +223,6 @@ public class HashMap<K, V> implements Map<K, V>, Iterable<K> {
             return null;
         }
 
-        @Override
-        public void remove() {
-
-        }
     }
 
 
