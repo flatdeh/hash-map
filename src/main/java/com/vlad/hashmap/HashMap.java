@@ -185,7 +185,7 @@ public class HashMap<K, V> implements Map<K, V>, Iterable<K> {
 
     @Override
     public Iterator<K> iterator() {
-        return new HashMapIterator();
+        return new HashMapIterator<>();
     }
 
     private static class Entry<K, V> {
@@ -199,7 +199,7 @@ public class HashMap<K, V> implements Map<K, V>, Iterable<K> {
 
     }
 
-    private class HashMapIterator implements Iterator<K> {
+    private class HashMapIterator<K> implements Iterator<K> {
         private int index;
         private int row = 0;
         private int column = 0;
@@ -214,13 +214,18 @@ public class HashMap<K, V> implements Map<K, V>, Iterable<K> {
             for (; row < buskets.length;) {
                 for (; column < buskets[row].size();) {
                     index++;
-                    return buskets[row].get(column++).key;
+                    return (K) buskets[row].get(column++).key;
                 }
                 row++;
                 column = 0;
             }
             index++;
             return null;
+        }
+
+        @Override
+        public void remove() {
+
         }
 
     }
